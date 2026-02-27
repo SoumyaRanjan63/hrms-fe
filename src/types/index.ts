@@ -21,13 +21,15 @@ export interface EmployeeListResponse {
   items?: Employee[]
 }
 
-/** Attendance record from API */
+/** Attendance record from API (snake_case as returned) */
 export interface AttendanceRecord {
   id?: number
-  employeeId?: number
-  employeeName?: string
+  employee?: number
+  employee_id?: string
+  employee_name?: string
   date?: string
   status?: string
+  created_at?: string
 }
 
 /** Payload for recording attendance */

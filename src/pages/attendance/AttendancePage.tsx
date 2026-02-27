@@ -55,7 +55,10 @@ export default function AttendancePage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
-                    Employee
+                    Employee Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
+                    Employee ID
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600">
                     Date
@@ -69,7 +72,7 @@ export default function AttendancePage() {
                 {records?.length === 0 && (
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={4}
                       className="px-4 py-8 text-center text-gray-500"
                     >
                       No attendance records found
@@ -80,12 +83,15 @@ export default function AttendancePage() {
                   <tr
                     key={
                       record?.id ??
-                      `${record?.employeeId ?? ''}-${record?.date ?? ''}`
+                      `${record?.employee_id ?? ''}-${record?.date ?? ''}`
                     }
                     className="hover:bg-gray-50"
                   >
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
-                      {record?.employeeName}
+                      {record?.employee_name}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
+                      {record?.employee_id}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
                       {record?.date}

@@ -5,10 +5,10 @@ import { createEmployee } from '../../api/employeeApi'
 function AddEmployeePage() {
   const navigate = useNavigate()
   const [formValues, setFormValues] = useState({
-    name: '',
+    employee_id: '',
+    full_name: '',
     email: '',
-    department: '',
-    role: ''
+    department: ''
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -27,7 +27,12 @@ function AddEmployeePage() {
     setSubmitting(true)
 
     try {
-      await createEmployee(formValues)
+      await createEmployee({
+        employee_id: formValues.employee_id,
+        full_name: formValues.full_name,
+        email: formValues.email,
+        department: formValues.department
+      })
       navigate('/employees')
     } catch (err) {
       const message =
@@ -51,12 +56,23 @@ function AddEmployeePage() {
       <div className="page-content">
         <form className="form" onSubmit={handleSubmit}>
           <div className="form-row">
-            <label htmlFor="name">Full name</label>
+            <label htmlFor="employee_id">Employee ID</label>
             <input
-              id="name"
-              name="name"
+              id="employee_id"
+              name="employee_id"
               type="text"
-              value={formValues.name}
+              value={formValues.employee_id}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-row">
+            <label htmlFor="full_name">Full name</label>
+            <input
+              id="full_name"
+              name="full_name"
+              type="text"
+              value={formValues.full_name}
               onChange={handleChange}
               required
             />
@@ -79,16 +95,6 @@ function AddEmployeePage() {
               name="department"
               type="text"
               value={formValues.department}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="form-row">
-            <label htmlFor="role">Role</label>
-            <input
-              id="role"
-              name="role"
-              type="text"
-              value={formValues.role}
               onChange={handleChange}
             />
           </div>

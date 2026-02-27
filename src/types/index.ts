@@ -21,20 +21,29 @@ export interface EmployeeListResponse {
   items?: Employee[]
 }
 
-/** Attendance record from API (snake_case as returned) */
+/** Nested employee object when API returns expanded attendance */
+export interface AttendanceEmployee {
+  id: number
+  employee_id: string
+  name: string
+}
+
+/** Attendance record from API (snake_case as returned); supports nested employee or flat fields */
 export interface AttendanceRecord {
   id?: number
-  employee?: number
-  employee_id?: string
-  employee_name?: string
   date?: string
   status?: string
   created_at?: string
+  /** Nested when API expands employee, or raw FK number */
+  employee?: number | AttendanceEmployee
+  /** Flat fallbacks when API returns denormalized fields */
+  employee_name?: string
+  employee_id?: string
 }
 
-/** Payload for recording attendance */
+/** Payload for recording attendance (POST /attendance/) */
 export interface RecordAttendancePayload {
-  employee_id: number
+  employee: number
   date: string
   status: string
 }

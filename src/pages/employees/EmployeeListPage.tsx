@@ -18,11 +18,11 @@ function resolveEmployees(
 export default function EmployeeListPage() {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
-
-    setLoading(true)
 
     getEmployees()
       .then((data) => {
@@ -42,15 +42,21 @@ export default function EmployeeListPage() {
   async function handleDelete(employeeId: number | string | undefined) {
     if (employeeId == null) return
 
-    setLoading(true)
+    setErrorMessage(null)
+    setSuccessMessage(null)
+
     try {
       await deleteEmployee(employeeId)
+      setSuccessMessage('Employee deleted successfully.')
+      setTimeout(() => setSuccessMessage(null), 5000)
       const data = await getEmployees()
       setEmployees(resolveEmployees(data))
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false)
+    } catch (error: unknown) {
+      const err = error as { data?: { detail?: string }; message?: string }
+      const message =
+        err?.data?.detail ?? err?.message ?? 'Failed to delete employee.'
+      setErrorMessage(message)
+      setTimeout(() => setErrorMessage(null), 5000)
     }
   }
 
@@ -71,6 +77,16 @@ export default function EmployeeListPage() {
         </Link>
       </div>
       <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+        {errorMessage && (
+          <div className="border-b border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
+          </div>
+        )}
+        {successMessage && (
+          <div className="border-b border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            {successMessage}
+          </div>
+        )}
         {loading ? (
           <p className="p-6 text-gray-500">Loading...</p>
         ) : (
@@ -106,8 +122,7 @@ export default function EmployeeListPage() {
                 {employees?.map((employee) => {
                   const displayEmployeeId =
                     employee?.employee_id ?? employee?.id
-                  const deleteEmployeeId =
-                    employee?.id ?? employee?.employee_id
+                  const deleteEmployeeId = employee?.id
 
                   return (
                     <tr
@@ -115,8 +130,7 @@ export default function EmployeeListPage() {
                         displayEmployeeId ??
                         employee?.email ??
                         employee?.full_name ??
-                        employee?.name ??
-                        Math.random()
+                        employee?.name 
                       }
                       className="hover:bg-gray-50"
                     >

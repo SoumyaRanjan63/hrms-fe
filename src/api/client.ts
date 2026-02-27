@@ -12,6 +12,15 @@ export const api: AxiosInstance = axios.create({
   },
 })
 
+api.interceptors.request.use((config) => {
+  if (config.method?.toLowerCase() === 'delete') {
+    const headers = { ...config.headers } as Record<string, unknown>
+    delete headers['Content-Type']
+    config.headers = headers as typeof config.headers
+  }
+  return config
+})
+
 api.interceptors.response.use(
   (response) => response?.data,
   (error) => {

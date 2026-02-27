@@ -18,12 +18,10 @@ function resolveRecords(
 
 export default function AttendancePage() {
   const [records, setRecords] = useState<AttendanceRecord[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
-
-    setLoading(true)
 
     fetchAttendance()
       .then((data) => {

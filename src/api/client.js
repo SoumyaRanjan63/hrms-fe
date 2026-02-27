@@ -1,43 +1,32 @@
-const API_BASE_URL =import.meta?.env?.API_BASE_URL 
+import axios from 'axios'
 
-async function apiClient(endpoint, options = {}) {
-  const { method = 'GET', headers, body } = options
+const API_BASE_URL =
+  import.meta?.env?.VITE_API_BASE_URL ||
+  import.meta?.env?.API_BASE_URL ||
+  '/api'
 
-  const config = {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(headers || {})
-    }
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
   }
+})
 
-  if (body) {
-    config.body = JSON.stringify(body)
+api.interceptors.response.use(
+  response => response?.data,
+  error => {
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      'Request failed'
+
+    const normalizedError = new Error(message)
+    normalizedError.status = error?.response?.status
+    normalizedError.data = error?.response?.data
+
+    throw normalizedError
   }
+)
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
-
-  if (!response?.ok) {
-    let errorBody = null
-
-    try {
-      errorBody = await response.json()
-    } catch {
-      errorBody = null
-    }
-
-    const error = new Error(errorBody?.message || 'Request failed')
-    error.status = response.status
-    error.data = errorBody
-    throw error
-  }
-
-  if (response.status === 204) {
-    return null
-  }
-
-  return response.json()
-}
-
-export { API_BASE_URL, apiClient }
+export { API_BASE_URL, api }
 

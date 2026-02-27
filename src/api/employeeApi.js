@@ -1,14 +1,11 @@
-import { apiClient } from './client'
+import { api } from './client'
 
 function fetchEmployees() {
-  return apiClient('/employees')
+  return api.get('/employees')
 }
 
 function createEmployee(payload) {
-  return apiClient('/employees', {
-    method: 'POST',
-    body: payload
-  })
+  return api.post('/employees', payload)
 }
 
 export { fetchEmployees, createEmployee }

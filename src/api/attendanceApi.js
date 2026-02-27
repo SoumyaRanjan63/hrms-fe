@@ -1,14 +1,11 @@
-import { apiClient } from './client'
+import { api } from './client'
 
 function fetchAttendance() {
-  return apiClient('/attendance')
+  return api.get('/attendance')
 }
 
 function recordAttendance(payload) {
-  return apiClient('/attendance', {
-    method: 'POST',
-    body: payload
-  })
+  return api.post('/attendance', payload)
 }
 
 export { fetchAttendance, recordAttendance }

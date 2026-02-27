@@ -1,7 +1,13 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createEmployee } from '../../api/employeeApi'
+import {
+  getTrimmedPayload,
+  validateEmployeeForm,
+  type EmployeeFormErrors,
+} from '../../lib/employeeFormValidation'
 import type { CreateEmployeePayload } from '../../types'
+import { Alert, Button, Card, CardContent, PageHeader } from '../../components/ui'
 
 const initialFormValues: CreateEmployeePayload = {
   employee_id: '',
@@ -10,10 +16,17 @@ const initialFormValues: CreateEmployeePayload = {
   department: '',
 }
 
+const inputBaseClass =
+  'block w-full rounded-lg border px-3 py-2 text-gray-900 shadow-sm focus:outline-none focus:ring-1'
+const inputErrorClass = 'border-red-500 focus:border-red-500 focus:ring-red-500'
+const inputValidClass =
+  'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+
 export default function AddEmployeePage() {
   const navigate = useNavigate()
   const [formValues, setFormValues] =
     useState<CreateEmployeePayload>(initialFormValues)
+  const [fieldErrors, setFieldErrors] = useState<EmployeeFormErrors>({})
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -23,20 +36,22 @@ export default function AddEmployeePage() {
       ...current,
       [name]: value,
     }))
+    if (fieldErrors[name as keyof CreateEmployeePayload]) {
+      setFieldErrors((current) => ({ ...current, [name]: undefined }))
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
-    setSubmitting(true)
+    const errors = validateEmployeeForm(formValues)
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) return
 
+    setSubmitting(true)
+    const payload = getTrimmedPayload(formValues)
     try {
-      await createEmployee({
-        employee_id: formValues.employee_id,
-        full_name: formValues.full_name,
-        email: formValues.email,
-        department: formValues.department,
-      })
+      await createEmployee(payload)
       navigate('/employees')
     } catch (err: unknown) {
       const message =
@@ -50,16 +65,21 @@ export default function AddEmployeePage() {
     }
   }
 
+  function inputClass(field: keyof CreateEmployeePayload) {
+    return fieldErrors[field]
+      ? `${inputBaseClass} ${inputErrorClass}`
+      : `${inputBaseClass} ${inputValidClass}`
+  }
+
   return (
     <div className="mx-auto max-w-md space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Add Employee</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Create a new employee record
-        </p>
-      </div>
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <form className="space-y-5" onSubmit={handleSubmit}>
+      <PageHeader
+        title="Add Employee"
+        description="Create a new employee record"
+      />
+      <Card>
+        <CardContent className="p-6">
+          <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <label
               htmlFor="employee_id"
@@ -74,8 +94,15 @@ export default function AddEmployeePage() {
               value={formValues.employee_id}
               onChange={handleChange}
               required
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              aria-invalid={Boolean(fieldErrors.employee_id)}
+              aria-describedby={fieldErrors.employee_id ? 'employee_id-error' : undefined}
+              className={inputClass('employee_id')}
             />
+            {fieldErrors.employee_id && (
+              <p id="employee_id-error" className="text-sm text-red-600" role="alert">
+                {fieldErrors.employee_id}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <label
@@ -91,8 +118,15 @@ export default function AddEmployeePage() {
               value={formValues.full_name}
               onChange={handleChange}
               required
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              aria-invalid={Boolean(fieldErrors.full_name)}
+              aria-describedby={fieldErrors.full_name ? 'full_name-error' : undefined}
+              className={inputClass('full_name')}
             />
+            {fieldErrors.full_name && (
+              <p id="full_name-error" className="text-sm text-red-600" role="alert">
+                {fieldErrors.full_name}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <label
@@ -108,8 +142,15 @@ export default function AddEmployeePage() {
               value={formValues.email}
               onChange={handleChange}
               required
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+              className={inputClass('email')}
             />
+            {fieldErrors.email && (
+              <p id="email-error" className="text-sm text-red-600" role="alert">
+                {fieldErrors.email}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <label
@@ -124,23 +165,32 @@ export default function AddEmployeePage() {
               type="text"
               value={formValues.department}
               onChange={handleChange}
-              className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              required
+              aria-invalid={Boolean(fieldErrors.department)}
+              aria-describedby={fieldErrors.department ? 'department-error' : undefined}
+              className={inputClass('department')}
             />
+            {fieldErrors.department && (
+              <p id="department-error" className="text-sm text-red-600" role="alert">
+                {fieldErrors.department}
+              </p>
+            )}
           </div>
           {error && (
-            <p className="text-sm text-red-600">{error}</p>
+            <Alert variant="error">{error}</Alert>
           )}
           <div className="pt-2">
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={submitting}
-              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none"
             >
               {submitting ? 'Saving...' : 'Save Employee'}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
